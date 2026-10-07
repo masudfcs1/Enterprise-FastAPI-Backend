@@ -22,12 +22,30 @@ async def lifespan(_app: FastAPI):
     """Manage application startup and shutdown lifecycle hooks."""
     try:
         await connect_db()
+        db_status = "\033[1;32m● Connected (Neon PostgreSQL)\033[0m"
     except Exception as exc:
-        import logging
+        db_status = f"\033[1;31m○ Disconnected ({exc})\033[0m"
 
-        logging.getLogger("app.main").warning(
-            "Could not connect to database on startup: %s. Continuing...", exc
-        )
+    # Colorful ASCII startup banner
+    print(
+        f"\n"
+        f"\033[1;36m  ______         _      _    ____ ___ \033[0m\n"
+        f"\033[1;36m |  ____|       | |    / \\  |  _ \\_ _|\033[0m\n"
+        f"\033[1;36m | |__ __ _ ___| |_   / _ \\ | |_) | | \033[0m\n"
+        f"\033[1;36m |  __/ _` / __| __| / ___ \\|  __/| | \033[0m\n"
+        f"\033[1;36m | | | (_| \\__ \\ |_ / ___ \\| |   | | \033[0m\n"
+        f"\033[1;36m |_|  \\__,_|___/\\__/_/   \\_\\_|  |___|\033[0m\n"
+        f"\n"
+        f"  \033[1mFastAPI Enterprise Backend\033[0m \033[36mv{settings.VERSION}\033[0m\n"
+        f"  \033[90m--------------------------------------------------\033[0m\n"
+        f"  \033[1;32m➜\033[0m  \033[1mLocal Server:\033[0m   \033[4;36mhttp://127.0.0.1:8000\033[0m\n"
+        f"  \033[1;32m➜\033[0m  \033[1mSwagger Docs:\033[0m   \033[4;36mhttp://127.0.0.1:8000/docs\033[0m\n"
+        f"  \033[1;32m➜\033[0m  \033[1mReDoc UI:\033[0m       \033[4;36mhttp://127.0.0.1:8000/redoc\033[0m\n"
+        f"  \033[1;32m➜\033[0m  \033[1mHealth Check:\033[0m   \033[4;36mhttp://127.0.0.1:8000/health\033[0m\n"
+        f"  \033[1;32m➜\033[0m  \033[1mDatabase:\033[0m       {db_status}\n"
+        f"  \033[90m--------------------------------------------------\033[0m\n"
+    )
+
     yield
     await disconnect_db()
 
@@ -37,7 +55,7 @@ def create_app() -> FastAPI:
 
     # ── Logging ───────────────────────────────────────────
     setup_logging(
-        level="DEBUG" if settings.DEBUG else "INFO",
+        level="INFO",
         json_output=settings.ENVIRONMENT == "production",
     )
 
